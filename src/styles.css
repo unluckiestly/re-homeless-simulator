@@ -177,26 +177,6 @@ canvas {
   border: 1px solid rgba(255,255,255,0.18);
 }
 
-.mobileBtns {
-  position: fixed;
-  right: 14px;
-  bottom: calc(14px + env(safe-area-inset-bottom));
-  display: grid;
-  gap: 8px;
-  pointer-events: auto;
-}
-
-.mBtn {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.95);
-  font-weight: 700;
-}
-
-
 @media (pointer: coarse) {
   .inventory {
     bottom: calc(120px + env(safe-area-inset-bottom));
@@ -275,4 +255,15 @@ button {
 
 @media (pointer: coarse) {
   .controlsHint, .mobileHint { display: none !important; }
+}
+
+canvas { position: fixed; inset: 0; z-index: 0; }
+
+.hud { z-index: 10; }
+.inventory { z-index: 20; }
+.mobileControls { z-index: 30; }
+.overlay { z-index: 40; }
+
+.inventory, .slot, button {
+  touch-action: manipulation;
 }

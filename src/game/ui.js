@@ -58,7 +58,15 @@ export function createUI() {
         slot.title = "Пусто";
       }
 
-      slot.addEventListener("click", () => onUseSlot(i));
+      slot.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        onUseSlot(i);
+      });
+
+      slot.addEventListener("click", (e) => {
+        e.preventDefault();
+        onUseSlot(i);
+      });
       invEl.appendChild(slot);
     }
   }

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Симулятор выживания — проект</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+  </div>
+
+  <div class="hud">
+    <div class="topRow">
+      <div class="panel stats" id="statsPanel">
+        <div class="statBlock">
+          <div class="label">Здоровье</div>
+          <div class="bar"><div class="fill" id="hpFill"></div></div>
+        </div>
+        <div class="statBlock">
+          <div class="label">Голод</div>
+          <div class="bar"><div class="fill" id="hungerFill"></div></div>
+        </div>
+        <div class="statBlock">
+          <div class="label">Тепло</div>
+          <div class="bar"><div class="fill" id="warmFill"></div></div>
+        </div>
+      </div>
+
+      <div class="panel rightInfo">
+        <div class="small" id="timeLine"></div>
+        <div class="small" id="cycleLine"></div>
+        <div class="small" id="shelterLine"></div>
+        <div class="small" style="opacity:0.75">WASD — ходить, ЛКМ — взаимодействие рядом, клик по слоту — использовать, P — пауза</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inventory" id="inv"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="overlay show" id="startOverlay">
+    <div class="card">
+      <h1>Прототип выживания</h1>
+      <p>Выживи 5 минут. Днём холод слабее, ночью сильнее. В укрытии тепло тратится намного медленнее.</p>
+      <p>ЛКМ рядом с предметом — поднять. Используй предметы кликом по слотам.</p>
+      <div class="btnRow">
+        <button id="startBtn">Начать</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="endOverlay">
+    <div class="card">
+      <h1 id="endTitle">Конец</h1>
+      <p id="endText"></p>
+      <div class="btnRow">
+        <button id="restartBtn">Заново</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

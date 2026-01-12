@@ -29,8 +29,14 @@ export function createUI() {
     toastEl._t = setTimeout(() => toastEl.classList.remove("show"), 1300);
   }
 
+  let useSlotHandler = null;
+
   function rebuildInventory(game, onUseSlot) {
+    if (typeof onUseSlot === "function") useSlotHandler = onUseSlot;
+    const handler = useSlotHandler;
+
     invEl.innerHTML = "";
+
     for (let i = 0; i < CONFIG.INVENTORY_SLOTS; i++) {
       const slot = document.createElement("div");
       slot.className = "slot";
@@ -53,20 +59,21 @@ export function createUI() {
         q.textContent = String(it.qty);
         slot.appendChild(q);
 
-        slot.title = `${def.name}. Клик — использовать.`;
+        slot.title = `${def?.name ?? it.type}. Tap — use.`;
       } else {
-        slot.title = "Пусто";
+        slot.title = "Empty";
       }
 
-      slot.addEventListener("pointerdown", (e) => {
+      const fire = (e) => {
         e.preventDefault();
-        onUseSlot(i);
-      });
+        e.stopPropagation();
+        handler?.(i);
+      };
 
-      slot.addEventListener("click", (e) => {
-        e.preventDefault();
-        onUseSlot(i);
-      });
+      slot.addEventListener("touchstart", fire, { passive: false });
+      slot.addEventListener("pointerdown", fire);
+      slot.addEventListener("click", fire);
+
       invEl.appendChild(slot);
     }
   }

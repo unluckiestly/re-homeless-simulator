@@ -6,6 +6,9 @@ import { makeItems, makeShelters } from "./game/world.js";
 import { createUI } from "./game/ui.js";
 import { createRenderer } from "./game/render.js";
 import { handlePickupClick, useInventorySlot } from "./game/inventory.js";
+import { EN } from "./core/lang.js";
+
+const T = EN;
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");

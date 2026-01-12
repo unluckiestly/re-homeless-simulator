@@ -1,12 +1,16 @@
 import { CONFIG } from "../core/config.js";
 import { rand, randi } from "../core/utils.js";
+import { EN } from "../core/lang.js";
+
+const T = EN;
+
 
 export const itemDefs = {
-  food: { name: "Еда", icon: "🍞", stack: 3, use: (st, toast) => { st.hunger = Math.min(100, st.hunger + 28); toast("Съел еду"); } },
-  water:{ name: "Вода", icon: "🥤", stack: 3, use: (st, toast) => { st.hunger = Math.min(100, st.hunger + 10); st.hp = Math.min(100, st.hp + 6); toast("Выпил воду"); } },
-  jacket:{ name: "Куртка", icon: "🧥", stack: 1, use: (st, toast) => { st.insulation = Math.max(st.insulation, 0.35); toast("Надел куртку (теплее)"); } },
-  cardboard:{ name: "Картон", icon: "📦", stack: 2, use: (st, toast) => { st.insulation = Math.max(st.insulation, 0.18); toast("Утеплился картоном"); } },
-  medkit:{ name: "Аптечка", icon: "🩹", stack: 2, use: (st, toast) => { st.hp = Math.min(100, st.hp + 35); toast("Подлечился"); } },
+  food: { name: T.items.food, icon: "🍞", stack: 3, use: (st, toast) => { st.hunger = Math.min(100, st.hunger + 28); toast("Съел еду"); } },
+  water:{ name: T.items.water, icon: "🥤", stack: 3, use: (st, toast) => { st.hunger = Math.min(100, st.hunger + 10); st.hp = Math.min(100, st.hp + 6); toast("Выпил воду"); } },
+  jacket:{ name: T.items.jacket, icon: "🧥", stack: 1, use: (st, toast) => { st.insulation = Math.max(st.insulation, 0.35); toast("Надел куртку (теплее)"); } },
+  cardboard:{ name: T.items.cardboard, icon: "📦", stack: 2, use: (st, toast) => { st.insulation = Math.max(st.insulation, 0.18); toast("Утеплился картоном"); } },
+  medkit:{ name: T.items.medkit, icon: "🩹", stack: 2, use: (st, toast) => { st.hp = Math.min(100, st.hp + 35); toast("Подлечился"); } },
 };
 
 export function spawnItem(type) {

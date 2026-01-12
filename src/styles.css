@@ -253,6 +253,10 @@ button {
   font-weight: 600;
 }
 
+.mobileHint {
+  display: none !important;
+}
+
 @media (pointer: coarse) {
   /* hide any control hints on mobile (clean screen) */
   .controlsHint, .mobileHint { display: none !important; }
@@ -286,6 +290,14 @@ button {
     z-index: 20 !important;
     pointer-events: auto !important;
     touch-action: manipulation !important;
+
+    .controlsHint {
+      display: none !important;
+    }
+
+    .mobileHint {
+      display: block !important;
+    }
   }
 
   .slot {

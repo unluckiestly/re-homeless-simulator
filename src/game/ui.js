@@ -1,8 +1,24 @@
 import { itemDefs } from "./world.js";
 import { pad2 } from "../core/utils.js";
 import { CONFIG } from "../core/config.js";
+import { EN } from "../core/lang.js";
+
+const T = EN;
+
 
 export function createUI() {
+  document.getElementById("startTitle").textContent = T.game.startTitle;
+  document.getElementById("startText1").textContent = T.game.startText1;
+  document.getElementById("startText2").textContent = T.game.startText2;
+
+  const lblHealth = document.getElementById("lblHealth");
+  const lblHunger = document.getElementById("lblHunger");
+  const lblWarmth = document.getElementById("lblWarmth");
+
+  if (lblHealth) lblHealth.textContent = T.stats.health;
+  if (lblHunger) lblHunger.textContent = T.stats.hunger;
+  if (lblWarmth) lblWarmth.textContent = T.stats.warmth;
+
   const hpFill = document.getElementById("hpFill");
   const hungerFill = document.getElementById("hungerFill");
   const warmFill = document.getElementById("warmFill");
@@ -103,9 +119,11 @@ export function createUI() {
     const lm = pad2(Math.floor(left / 60));
     const ls = pad2(left % 60);
 
-    timeLine.textContent = `Время: ${mm}:${ss} | До победы: ${lm}:${ls}`;
-    cycleLine.textContent = `${meta.flags.isNight ? "Ночь" : "День"} | Цикл: ${Math.floor((meta.flags.cyclePos / meta.flags.cycleLen) * 100)}%`;
-    shelterLine.textContent = meta.flags.inShelter ? "Ты в укрытии: тепло тратится медленнее" : "Ты на улице";
+    timeLine.textContent = `${T.hud.time}: ${mm}:${ss} | ${T.hud.toWin}: ${lm}:${ls}`;
+    cycleLine.textContent = meta.flags.isNight ? T.hud.night : T.hud.day;
+
+    shelterLine.textContent = meta.flags.inShelter ? `${T.hud.shelter}. ${T.hud.shelterHint}` : T.hud.outside;
+
   }
 
   function showStart(show) {

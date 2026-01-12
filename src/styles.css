@@ -272,3 +272,7 @@ button {
   color: white;
   font-weight: 600;
 }
+
+@media (pointer: coarse) {
+  .controlsHint, .mobileHint { display: none !important; }
+}

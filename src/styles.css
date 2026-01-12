@@ -5,213 +5,137 @@ html, body {
   overflow: hidden;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   user-select: none;
+  touch-action: none;
 }
+
 #wrap {
   position: fixed;
   inset: 0;
-  display: grid;
-  grid-template-rows: 1fr;
 }
+
 canvas {
   width: 100vw;
   height: 100vh;
   display: block;
-  image-rendering: auto;
   background: #0b0d12;
-  cursor: crosshair;
 }
 
 .hud {
   position: fixed;
-  left: 16px;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  left: 12px;
+  right: 12px;
   pointer-events: none;
   color: rgba(255,255,255,0.92);
   text-shadow: 0 1px 2px rgba(0,0,0,0.55);
 }
+
 .topRow {
   display: flex;
-  gap: 14px;
-  align-items: center;
+  gap: 12px;
   justify-content: space-between;
+  align-items: flex-start;
 }
+
 .panel {
-  pointer-events: none;
-  background: rgba(12,16,24,0.55);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(14,18,28,0.65);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 14px;
   padding: 10px 12px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
 }
+
 .stats {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 8px;
 }
+
 .statBlock {
   display: grid;
   gap: 4px;
 }
+
 .label {
-  font-size: 12px;
-  opacity: 0.9;
-  margin-bottom: 4px;
+  font-size: 11px;
+  opacity: 0.85;
 }
+
 .bar {
-  width: 220px;
-  height: 12px;
+  width: 160px;
+  height: 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.12);
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.10);
 }
+
 .fill {
   height: 100%;
-  width: 50%;
   border-radius: 999px;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.9);
 }
 
 .rightInfo {
   display: grid;
   gap: 6px;
-  align-items: end;
-  justify-items: end;
-}
-.small {
-  font-size: 12px;
-  opacity: 0.9;
-  line-height: 1.25;
-  max-width: 520px;
   text-align: right;
 }
+
+.small {
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.85;
+  max-width: 240px;
+}
+
 
 .inventory {
   position: fixed;
   left: 50%;
-  bottom: 16px;
+  bottom: 14px;
   transform: translateX(-50%);
   display: grid;
   grid-auto-flow: column;
   gap: 8px;
-  pointer-events: auto;
-  background: rgba(12,16,24,0.55);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
   padding: 10px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-}
-.slot {
-  width: 58px;
-  height: 58px;
-  border-radius: 14px;
+  pointer-events: auto;
+
+  background: rgba(14,18,28,0.65);
   border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.06);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.slot {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
   display: grid;
   place-items: center;
   position: relative;
-  transition: transform 0.06s ease;
 }
-.slot:hover { transform: translateY(-1px); }
-.slot:active { transform: translateY(1px); }
+
 .slot .k {
   position: absolute;
-  left: 8px;
-  top: 6px;
-  font-size: 11px;
-  opacity: 0.7;
+  left: 6px;
+  top: 4px;
+  font-size: 10px;
+  opacity: 0.6;
 }
+
 .slot .q {
   position: absolute;
-  right: 8px;
-  bottom: 6px;
-  font-size: 12px;
-  opacity: 0.9;
-  background: rgba(0,0,0,0.35);
-  padding: 1px 6px;
+  right: 6px;
+  bottom: 4px;
+  font-size: 11px;
+  padding: 0 6px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
-.toast {
-  position: fixed;
-  left: 50%;
-  top: 86px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: rgba(12,16,24,0.55);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 10px 12px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  color: rgba(255,255,255,0.92);
-  font-size: 13px;
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  display: none;
-  place-items: center;
-  background: rgba(5,7,10,0.65);
-  color: rgba(255,255,255,0.95);
-  text-align: center;
-  padding: 24px;
-}
-.overlay.show { display: grid; }
-.card {
-  max-width: 760px;
-  background: rgba(12,16,24,0.72);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 18px;
-  padding: 18px 18px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-}
-.card h1 {
-  margin: 0 0 8px 0;
-  font-size: 22px;
-  letter-spacing: 0.2px;
-}
-.card p {
-  margin: 8px 0;
-  opacity: 0.92;
-  line-height: 1.35;
-}
-.btnRow {
-  margin-top: 14px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-button {
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.95);
-  border-radius: 12px;
-  padding: 10px 14px;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-button:hover { background: rgba(255,255,255,0.12); }
-
-body {
-  touch-action: none;
-  overscroll-behavior: none;
-}
 
 .mobileControls {
   position: fixed;
@@ -226,96 +150,62 @@ body {
 
 .stick {
   position: fixed;
-  left: 18px;
-  bottom: 18px;
-  width: 140px;
-  height: 140px;
+  left: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  width: 96px;
+  height: 96px;
   pointer-events: auto;
 }
 
 .stickBase {
   position: absolute;
   inset: 0;
-  border-radius: 999px;
+  border-radius: 50%;
   background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 .stickKnob {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 62px;
-  height: 62px;
+  width: 44px;
+  height: 44px;
   transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.16);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.18);
 }
 
 .mobileBtns {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
   display: grid;
-  gap: 10px;
+  gap: 8px;
   pointer-events: auto;
 }
 
 .mBtn {
-  width: 74px;
-  height: 74px;
-  border-radius: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.10);
   color: rgba(255,255,255,0.95);
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  font-weight: 700;
 }
 
+
 @media (pointer: coarse) {
-  .hud {
-    left: 10px;
-    top: 10px;
-    right: 10px;
-  }
-
-  .panel {
-    padding: 8px 10px;
-    border-radius: 12px;
-  }
-
-  .topRow {
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  .stats {
-    gap: 8px;
-  }
-
-  .label {
-    font-size: 11px;
-    margin-bottom: 3px;
-  }
-
-  .bar {
-    width: 160px;
-    height: 10px;
-  }
-
-  .small {
-    font-size: 11px;
-    max-width: 260px;
-  }
-
   .inventory {
-    bottom: 10px;
-    padding: 8px;
-    gap: 6px;
-    border-radius: 14px;
+    bottom: calc(120px + env(safe-area-inset-bottom));
+    width: min(360px, calc(100vw - 24px));
+    grid-auto-flow: row;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 10px;
+    border-radius: 18px;
   }
 
   .slot {
@@ -325,136 +215,60 @@ body {
   }
 
   .slot .k {
-    left: 6px;
-    top: 4px;
-    font-size: 10px;
-  }
-
-  .slot .q {
-    right: 6px;
-    bottom: 4px;
-    font-size: 11px;
-    padding: 0px 5px;
-  }
-
-  .toast {
-    top: 64px;
-    font-size: 12px;
-    padding: 8px 10px;
-    border-radius: 12px;
-  }
-
-  .card {
-    max-width: 92vw;
-    padding: 14px 14px;
-    border-radius: 16px;
-  }
-
-  .card h1 {
-    font-size: 18px;
-  }
-
-  .card p {
-    font-size: 13px;
-  }
-
-  .stick {
-    left: 12px;
-    bottom: 12px;
-    width: 110px;
-    height: 110px;
-  }
-
-  .stickKnob {
-    width: 50px;
-    height: 50px;
-  }
-
-  .mobileBtns {
-    right: 12px;
-    bottom: 12px;
-    gap: 8px;
-  }
-
-  .mBtn {
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 420px) {
-  .bar {
-    width: 140px;
+    display: none;
   }
 
   .small {
-    max-width: 220px;
-  }
-
-  .slot {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-@media (pointer: coarse) and (orientation: landscape) {
-  .hud {
-    top: 8px;
-  }
-
-  .inventory {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: calc(94px + env(safe-area-inset-bottom)); /* выше джойстика/кнопок */
-    padding: 10px 10px;
-    gap: 8px;
-
-    width: min(360px, calc(100vw - 24px));
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns: repeat(5, 1fr); /* 5 в ряд, 2 ряда = 10 мест (у нас 9) */
-    justify-items: center;
-    align-items: center;
-
-    border-radius: 18px;
-    background: rgba(12,16,24,0.70);
-    border: 1px solid rgba(255,255,255,0.10);
-  }
-
-  .slot {
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-  }
-
-  .slot .k { display: none; }
-
-  .slot .q {
-    right: 6px;
-    bottom: 5px;
     font-size: 11px;
-    padding: 0px 6px;
-    background: rgba(0,0,0,0.40);
-    border: 1px solid rgba(255,255,255,0.10);
   }
-  
-  .stick {
-    width: 96px;
-    height: 96px;
-  }
-
-  .mBtn {
-    width: 54px;
-    height: 54px;
-  }
-
-  .controlsHint { display: none; }
-  .mobileHint { display: block; }
 }
 
-.mobileHint { display: none; }
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(5,7,10,0.7);
+  color: white;
+  text-align: center;
+  padding: 24px;
+}
 
+.overlay.show {
+  display: grid;
+}
+
+.card {
+  max-width: 92vw;
+  background: rgba(14,18,28,0.75);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 16px;
+  backdrop-filter: blur(12px);
+}
+
+.card h1 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.card p {
+  margin: 6px 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.btnRow {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+button {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.10);
+  color: white;
+  font-weight: 600;
+}

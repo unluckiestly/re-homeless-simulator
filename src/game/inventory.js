@@ -22,7 +22,7 @@ export function tryAddItem(inv, type) {
 }
 
 export function useInventorySlot(game, ui, idx) {
-  if (!game.meta.running || game.meta.paused) return;
+  if (!game.meta.running) return;
   const it = game.state.inv[idx];
   if (!it) return;
   const def = itemDefs[it.type];
@@ -35,7 +35,7 @@ export function useInventorySlot(game, ui, idx) {
 }
 
 export function handlePickupClick(game, ui, worldPoint) {
-  if (!game.meta.running || game.meta.paused) return false;
+  if (!game.meta.running) return false;
 
   const st = game.state;
   let nearest = null;

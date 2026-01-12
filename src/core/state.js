@@ -18,7 +18,6 @@ export function createState() {
 export function createGameMeta() {
   return {
     running: false,
-    paused: false,
     t0: 0,
     last: 0,
 

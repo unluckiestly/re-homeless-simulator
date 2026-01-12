@@ -36,20 +36,10 @@ const input = createInput(canvas, DPR, { isMobile });
 const mobileControls = document.getElementById("mobileControls");
 const stickEl = document.getElementById("stick");
 const stickKnob = document.getElementById("stickKnob");
-const actBtn = document.getElementById("actBtn");
-const pauseBtn = document.getElementById("pauseBtn");
 
 if (isMobile) {
   mobileControls?.classList.add("on");
   input.attachMobile(stickEl, stickKnob);
-
-  actBtn?.addEventListener("click", () => {
-    if (!game.meta.running || game.meta.paused) return;
-    const wp = screenToWorld(input.mouse.x, input.mouse.y);
-    handlePickupClick(game, ui, wp);
-  });
-
-  pauseBtn?.addEventListener("click", () => togglePause());
 
   window.addEventListener("contextmenu", (e) => e.preventDefault());
 }
@@ -67,6 +57,8 @@ function createGame() {
   };
 }
 
+let autoPickupCooldown = 0;
+
 let game = createGame();
 
 function rebuildInv() {
@@ -76,7 +68,6 @@ function rebuildInv() {
 function reset() {
   game = createGame();
   game.meta.running = false;
-  game.meta.paused = false;
   ui.showEnd(false);
   ui.showStart(true);
   rebuildInv();
@@ -84,7 +75,6 @@ function reset() {
 
 function start() {
   game.meta.running = true;
-  game.meta.paused = false;
   game.meta.t0 = performance.now();
   game.meta.last = game.meta.t0;
   ui.showStart(false);
@@ -97,25 +87,17 @@ function end(victory) {
   ui.showEndScreen(victory, survived);
 }
 
-function togglePause() {
-  if (!game.meta.running) return;
-  game.meta.paused = !game.meta.paused;
-  ui.toast(game.meta.paused ? "Пауза" : "Продолжаем");
-  if (!game.meta.paused) game.meta.last = performance.now();
-}
-
 function screenToWorld(sx, sy) {
   return { x: sx / DPR() + game.meta.camera.x, y: sy / DPR() + game.meta.camera.y };
 }
 
 canvas.addEventListener("mousedown", () => {
-  if (!game.meta.running || game.meta.paused) return;
+  if (!game.meta.running) return;
   const wp = screenToWorld(input.mouse.x, input.mouse.y);
   handlePickupClick(game, ui, wp);
 });
 
 window.addEventListener("keydown", (e) => {
-  if (e.code === "KeyP") togglePause();
   if (e.code.startsWith("Digit")) {
     const n = Number(e.code.replace("Digit",""));
     if (n >= 1 && n <= 9) useInventorySlot(game, ui, n - 1);
@@ -153,6 +135,32 @@ function update(dt) {
 
   st.x = clamp(st.x, 50, CONFIG.WORLD.w - 50);
   st.y = clamp(st.y, 50, CONFIG.WORLD.h - 50);
+
+  if (isMobile) {
+    autoPickupCooldown -= dt;
+
+    if (autoPickupCooldown <= 0) {
+      let nearestIndex = -1;
+      let best = Infinity;
+
+      for (let i = 0; i < game.items.length; i++) {
+        const it = game.items[i];
+        const dx = st.x - it.x;
+        const dy = st.y - it.y;
+        const d = dx * dx + dy * dy;
+        if (d < best) {
+          best = d;
+          nearestIndex = i;
+        }
+      }
+
+      const R = CONFIG.INTERACT_RADIUS;
+      if (nearestIndex !== -1 && best <= R * R) {
+        const picked = handlePickupClick(game, ui, null);
+        if (picked) autoPickupCooldown = 0.18;
+      }
+    }
+  }
 
   let inShelter = false;
   for (const sh of game.shelters) {
@@ -206,7 +214,6 @@ function loop(now) {
   ui.updateHUD(game);
 
   if (!game.meta.running) return;
-  if (game.meta.paused) return;
 
   const dt = Math.min(0.05, (now - game.meta.last) / 1000);
   game.meta.last = now;

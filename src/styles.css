@@ -254,39 +254,47 @@ button {
 }
 
 @media (pointer: coarse) {
+  /* hide any control hints on mobile (clean screen) */
+  .controlsHint, .mobileHint { display: none !important; }
+
+  /* inventory: bottom-right, compact 3x3 */
   .inventory {
-    position: fixed;
-    left: auto;
-    transform: none;
+    left: auto !important;
+    right: 14px !important;
+    top: auto !important;
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    transform: none !important;
 
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    width: auto !important;
+    max-width: none !important;
 
-    padding: 10px;
-    gap: 8px;
+    display: grid !important;
+    grid-template-columns: repeat(3, 44px) !important;
+    grid-auto-rows: 44px !important;
+    justify-content: center !important;
+    align-content: center !important;
+    gap: 8px !important;
 
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, 1fr); /* 3x3 = 9 слотов */
+    padding: 10px !important;
+    border-radius: 18px !important;
 
-    border-radius: 18px;
-    background: rgba(14,18,28,0.70);
-    border: 1px solid rgba(255,255,255,0.10);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    background: rgba(14,18,28,0.70) !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35) !important;
 
-    z-index: 20;
-    touch-action: manipulation;
+    z-index: 20 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
   }
 
   .slot {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
   }
 
-  .slot .k {
-    display: none;
-  }
+  .slot .k { display: none !important; }
 }
+
 

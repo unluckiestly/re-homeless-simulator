@@ -10,21 +10,51 @@ import { handlePickupClick, useInventorySlot } from "./game/inventory.js";
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
+const isMobile = matchMedia("(pointer: coarse)").matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 const dprState = { value: 1 };
 const DPR = () => dprState.value;
 
 function updateDPR() {
-  dprState.value = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  const raw = window.devicePixelRatio || 1;
+  const cap = isMobile ? 1.25 : 2;
+  dprState.value = Math.max(1, Math.min(cap, raw));
 }
+
 function resize() {
   updateDPR();
   canvas.width = Math.floor(innerWidth * DPR());
   canvas.height = Math.floor(innerHeight * DPR());
 }
+
 window.addEventListener("resize", resize);
 resize();
 
-const input = createInput(canvas, DPR);
+
+const input = createInput(canvas, DPR, { isMobile });
+
+const mobileControls = document.getElementById("mobileControls");
+const stickEl = document.getElementById("stick");
+const stickKnob = document.getElementById("stickKnob");
+const actBtn = document.getElementById("actBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+
+if (isMobile) {
+  mobileControls?.classList.add("on");
+  input.attachMobile(stickEl, stickKnob);
+
+  actBtn?.addEventListener("click", () => {
+    if (!game.meta.running || game.meta.paused) return;
+    const wp = screenToWorld(input.mouse.x, input.mouse.y);
+    handlePickupClick(game, ui, wp);
+  });
+
+  pauseBtn?.addEventListener("click", () => togglePause());
+
+  window.addEventListener("contextmenu", (e) => e.preventDefault());
+}
+
+
 const ui = createUI();
 const renderer = createRenderer(canvas, ctx, DPR);
 
@@ -103,13 +133,20 @@ function update(dt) {
   const isNight = cyclePos > dn.daySec;
 
   let mvx = 0, mvy = 0;
-  if (input.keys.has("KeyW")) mvy -= 1;
-  if (input.keys.has("KeyS")) mvy += 1;
-  if (input.keys.has("KeyA")) mvx -= 1;
-  if (input.keys.has("KeyD")) mvx += 1;
+
+  if (isMobile && input.touchMove.active) {
+    mvx = input.touchMove.x;
+    mvy = input.touchMove.y;
+  } else {
+    if (input.keys.has("KeyW")) mvy -= 1;
+    if (input.keys.has("KeyS")) mvy += 1;
+    if (input.keys.has("KeyA")) mvx -= 1;
+    if (input.keys.has("KeyD")) mvx += 1;
+  }
 
   const mag = Math.hypot(mvx, mvy) || 1;
-  mvx /= mag; mvy /= mag;
+  mvx /= mag;
+  mvy /= mag;
 
   st.x += mvx * st.speed * dt;
   st.y += mvy * st.speed * dt;

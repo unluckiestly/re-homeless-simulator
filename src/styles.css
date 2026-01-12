@@ -207,3 +207,71 @@ button {
   letter-spacing: 0.2px;
 }
 button:hover { background: rgba(255,255,255,0.12); }
+
+/* Mobile friendliness */
+body {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+.mobileControls {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.mobileControls.on {
+  display: block;
+}
+
+.stick {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  width: 140px;
+  height: 140px;
+  pointer-events: auto;
+}
+
+.stickBase {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(8px);
+}
+
+.stickKnob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 62px;
+  height: 62px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+}
+
+.mobileBtns {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.mBtn {
+  width: 74px;
+  height: 74px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.95);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}

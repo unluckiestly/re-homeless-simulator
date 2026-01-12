@@ -9,9 +9,9 @@ export const CONFIG = Object.freeze({
   CYCLE: { daySec: 90, nightSec: 90 },
 
   DRAIN: {
-    hungerPerMin: 8.0,      // было 2.2  -> ~3.6x
-    warmDayPerMin: 9.5,     // было 2.6  -> ~3.65x
-    warmNightPerMin: 24.0,  // было 6.5  -> ~3.7x
+    hungerPerMin: 30.0,      // было 2.2  -> ~3.6x
+    warmDayPerMin: 30.5,     // было 2.6  -> ~3.65x
+    warmNightPerMin: 45.0,  // было 6.5  -> ~3.7x
     hpRegenPerMin: 1.2,
     hpStarvePerMin: 8,
     hpFreezePerMin: 12,

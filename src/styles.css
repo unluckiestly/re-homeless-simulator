@@ -254,16 +254,39 @@ button {
 }
 
 @media (pointer: coarse) {
-  .controlsHint, .mobileHint { display: none !important; }
+  .inventory {
+    position: fixed;
+    left: auto;
+    transform: none;
+
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+
+    padding: 10px;
+    gap: 8px;
+
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, 1fr); /* 3x3 = 9 слотов */
+
+    border-radius: 18px;
+    background: rgba(14,18,28,0.70);
+    border: 1px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+
+    z-index: 20;
+    touch-action: manipulation;
+  }
+
+  .slot {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .slot .k {
+    display: none;
+  }
 }
 
-canvas { position: fixed; inset: 0; z-index: 0; }
-
-.hud { z-index: 10; }
-.inventory { z-index: 20; }
-.mobileControls { z-index: 30; }
-.overlay { z-index: 40; }
-
-.inventory, .slot, button {
-  touch-action: manipulation;
-}

@@ -1,4 +1,5 @@
 import { CONFIG } from "../core/config.js";
+import { clamp } from "../core/utils.js";
 import { itemDefs } from "./world.js";
 
 export function createRenderer(canvas, ctx, DPR) {
@@ -7,8 +8,11 @@ export function createRenderer(canvas, ctx, DPR) {
     ctx.setTransform(1,0,0,1,0,0);
     ctx.clearRect(0,0,w,h);
 
+    const dpr = DPR();
+    const isNight = game.meta.flags.isNight;
+
     ctx.save();
-    ctx.scale(DPR(), DPR());
+    ctx.scale(dpr, dpr);
     ctx.translate(-game.meta.camera.x, -game.meta.camera.y);
 
     ctx.fillStyle = "#0f1520";
@@ -31,8 +35,17 @@ export function createRenderer(canvas, ctx, DPR) {
       ctx.fillText("укрытие", sh.x + 10, sh.y + 22);
     }
 
+    const st = game.state;
+    const itemVisibilityRange = isNight ? 220 : Infinity;
+
     for (const it of game.items) {
       const def = itemDefs[it.type];
+      const dist = Math.hypot(it.x - st.x, it.y - st.y);
+      const visibility = clamp(1 - dist / itemVisibilityRange, 0, 1);
+      if (visibility <= 0) continue;
+
+      ctx.save();
+      ctx.globalAlpha *= visibility;
       ctx.beginPath();
       ctx.arc(it.x, it.y, it.r, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(255,255,255,0.10)";
@@ -46,9 +59,9 @@ export function createRenderer(canvas, ctx, DPR) {
       ctx.textBaseline = "middle";
       ctx.fillStyle = "rgba(255,255,255,0.92)";
       ctx.fillText(def?.icon ?? "❓", it.x, it.y + 1);
+      ctx.restore();
     }
 
-    const st = game.state;
     ctx.beginPath();
     ctx.arc(st.x, st.y, 18, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(255,255,255,0.85)";
@@ -65,15 +78,40 @@ export function createRenderer(canvas, ctx, DPR) {
 
     ctx.restore();
 
-    const nightStrength = game.meta.flags.isNight ? 0.55 : 0.20;
+    const nightStrength = isNight ? 0.55 : 0.20;
     ctx.fillStyle = `rgba(10,16,26,${nightStrength})`;
     ctx.fillRect(0, 0, w, h);
 
     const vign = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.15, w/2, h/2, Math.min(w,h)*0.75);
     vign.addColorStop(0, "rgba(0,0,0,0.0)");
-    vign.addColorStop(1, `rgba(0,0,0,${game.meta.flags.isNight ? 0.55 : 0.35})`);
+    vign.addColorStop(1, `rgba(0,0,0,${isNight ? 0.55 : 0.35})`);
     ctx.fillStyle = vign;
     ctx.fillRect(0, 0, w, h);
+
+    if (isNight) {
+      const lightX = (st.x - game.meta.camera.x) * dpr;
+      const lightY = (st.y - game.meta.camera.y) * dpr;
+      const innerRadius = 70 * dpr;
+      const outerRadius = 200 * dpr;
+
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      const cutout = ctx.createRadialGradient(lightX, lightY, innerRadius * 0.3, lightX, lightY, outerRadius);
+      cutout.addColorStop(0, "rgba(0,0,0,0.9)");
+      cutout.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = cutout;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      const glow = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, outerRadius * 0.9);
+      glow.addColorStop(0, "rgba(255,240,200,0.25)");
+      glow.addColorStop(1, "rgba(255,240,200,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    }
 
     ctx.save();
     ctx.translate(0.5, 0.5);

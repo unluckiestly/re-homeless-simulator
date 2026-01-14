@@ -1,14 +1,10 @@
 import { CONFIG } from "./core/config.js";
-import { clamp, lerp, insideRect } from "./core/utils.js";
+import { clamp, lerp } from "./core/utils.js";
 import { createState, createGameMeta } from "./core/state.js";
 import { createInput } from "./game/input.js";
-import { makeItems, makeShelters } from "./game/world.js";
+import { makeRooms, spawnEnemies, spawnPickup } from "./game/world.js";
 import { createUI } from "./game/ui.js";
 import { createRenderer } from "./game/render.js";
-import { handlePickupClick, useInventorySlot } from "./game/inventory.js";
-import { EN } from "./core/lang.js";
-
-const T = EN;
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -33,7 +29,6 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
-
 const input = createInput(canvas, DPR, { isMobile });
 
 const mobileControls = document.getElementById("mobileControls");
@@ -47,75 +42,153 @@ if (isMobile) {
   window.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 
-
 const ui = createUI();
 const renderer = createRenderer(canvas, ctx, DPR);
 
 function createGame() {
+  const { rooms, startId } = makeRooms();
+  const roomsById = new Map(rooms.map((room) => [room.id, room]));
+
+  for (const room of rooms) {
+    if (room.id === startId) continue;
+    room.enemies = spawnEnemies(3 + Math.floor(Math.random() * 4));
+  }
+
   return {
     state: createState(),
     meta: createGameMeta(),
-    shelters: makeShelters(),
-    items: makeItems(),
+    rooms,
+    roomsById,
+    bullets: [],
+    playerDamage: CONFIG.PLAYER.bulletDamage,
+    startRoomId: startId,
   };
 }
 
-let autoPickupCooldown = 0;
-
 let game = createGame();
-
-function rebuildInv() {
-  ui.rebuildInventory(game, (idx) => useInventorySlot(game, ui, idx));
-}
 
 function reset() {
   game = createGame();
   game.meta.running = false;
+  game.meta.currentRoomId = game.startRoomId;
+  game.meta.totalRooms = game.rooms.length;
   ui.showEnd(false);
   ui.showStart(true);
-  rebuildInv();
 }
 
 function start() {
   game.meta.running = true;
   game.meta.t0 = performance.now();
   game.meta.last = game.meta.t0;
+  game.meta.elapsed = 0;
+  game.meta.currentRoomId = game.startRoomId;
+  game.meta.totalRooms = game.rooms.length;
+  const startRoom = game.roomsById.get(game.startRoomId);
+  startRoom.cleared = startRoom.enemies.length === 0;
+  game.meta.clearedRooms = startRoom.cleared ? 1 : 0;
+  game.state.x = CONFIG.ROOM.w / 2;
+  game.state.y = CONFIG.ROOM.h / 2;
   ui.showStart(false);
-  rebuildInv();
 }
 
 function end(victory) {
   game.meta.running = false;
-  const survived = Math.max(0, Math.floor(game.meta.dayNight.t));
+  const survived = Math.max(0, Math.floor(game.meta.elapsed));
   ui.showEndScreen(victory, survived);
 }
 
-function screenToWorld(sx, sy) {
-  return { x: sx / DPR() + game.meta.camera.x, y: sy / DPR() + game.meta.camera.y };
+function updateView() {
+  const viewW = canvas.width / DPR();
+  const viewH = canvas.height / DPR();
+  const scale = Math.min(viewW / CONFIG.ROOM.w, viewH / CONFIG.ROOM.h);
+  const offsetX = (viewW - CONFIG.ROOM.w * scale) / 2;
+  const offsetY = (viewH - CONFIG.ROOM.h * scale) / 2;
+  game.meta.view = { scale, offsetX, offsetY };
+  return { viewW, viewH, scale };
 }
 
-canvas.addEventListener("mousedown", () => {
-  if (!game.meta.running) return;
-  const wp = screenToWorld(input.mouse.x, input.mouse.y);
-  handlePickupClick(game, ui, wp);
-});
+function screenToWorld(sx, sy) {
+  const view = game.meta.view;
+  const x = (sx / DPR() - view.offsetX) / view.scale + game.meta.camera.x;
+  const y = (sy / DPR() - view.offsetY) / view.scale + game.meta.camera.y;
+  return { x, y };
+}
 
-window.addEventListener("keydown", (e) => {
-  if (e.code.startsWith("Digit")) {
-    const n = Number(e.code.replace("Digit",""));
-    if (n >= 1 && n <= 9) useInventorySlot(game, ui, n - 1);
+function roomId(row, col) {
+  return `${row}:${col}`;
+}
+
+function enterRoom(nextId, fromDir) {
+  const room = game.roomsById.get(nextId);
+  if (!room) return;
+  game.meta.currentRoomId = nextId;
+  game.bullets = [];
+  const radius = 18;
+  if (fromDir === "up") {
+    game.state.y = CONFIG.ROOM.h - radius - 6;
+    game.state.x = CONFIG.ROOM.w / 2;
   }
-});
+  if (fromDir === "down") {
+    game.state.y = radius + 6;
+    game.state.x = CONFIG.ROOM.w / 2;
+  }
+  if (fromDir === "left") {
+    game.state.x = CONFIG.ROOM.w - radius - 6;
+    game.state.y = CONFIG.ROOM.h / 2;
+  }
+  if (fromDir === "right") {
+    game.state.x = radius + 6;
+    game.state.y = CONFIG.ROOM.h / 2;
+  }
+}
+
+function spawnBullet(dirX, dirY) {
+  const st = game.state;
+  const len = Math.hypot(dirX, dirY) || 1;
+  const nx = dirX / len;
+  const ny = dirY / len;
+  game.bullets.push({
+    x: st.x,
+    y: st.y,
+    vx: nx * CONFIG.PLAYER.bulletSpeed,
+    vy: ny * CONFIG.PLAYER.bulletSpeed,
+    r: 5,
+  });
+  game.meta.fireCooldown = CONFIG.PLAYER.fireCooldown;
+}
+
+function handleShooting(dt, moveDir) {
+  game.meta.fireCooldown = Math.max(0, game.meta.fireCooldown - dt);
+  if (game.meta.fireCooldown > 0) return;
+
+  let aimX = 0;
+  let aimY = 0;
+
+  if (!isMobile && input.mouse.down) {
+    const wp = screenToWorld(input.mouse.x, input.mouse.y);
+    aimX = wp.x - game.state.x;
+    aimY = wp.y - game.state.y;
+  } else {
+    if (input.keys.has("ArrowUp")) aimY -= 1;
+    if (input.keys.has("ArrowDown")) aimY += 1;
+    if (input.keys.has("ArrowLeft")) aimX -= 1;
+    if (input.keys.has("ArrowRight")) aimX += 1;
+  }
+
+  if (isMobile && input.touchMove.active) {
+    aimX = moveDir.x;
+    aimY = moveDir.y;
+  }
+
+  if (Math.hypot(aimX, aimY) < 0.1) return;
+  spawnBullet(aimX, aimY);
+}
 
 function update(dt) {
   const st = game.state;
   const meta = game.meta;
-  const dn = meta.dayNight;
-
-  dn.t += dt;
-  const cycleLen = dn.daySec + dn.nightSec;
-  const cyclePos = dn.t % cycleLen;
-  const isNight = cyclePos > dn.daySec;
+  meta.elapsed += dt;
+  const room = game.roomsById.get(meta.currentRoomId);
 
   let mvx = 0, mvy = 0;
 
@@ -136,82 +209,109 @@ function update(dt) {
   st.x += mvx * st.speed * dt;
   st.y += mvy * st.speed * dt;
 
-  st.x = clamp(st.x, 50, CONFIG.WORLD.w - 50);
-  st.y = clamp(st.y, 50, CONFIG.WORLD.h - 50);
+  const radius = 18;
+  const roomW = CONFIG.ROOM.w;
+  const roomH = CONFIG.ROOM.h;
+  st.x = clamp(st.x, radius, roomW - radius);
+  st.y = clamp(st.y, radius, roomH - radius);
 
-  if (isMobile) {
-    autoPickupCooldown -= dt;
+  handleShooting(dt, { x: mvx, y: mvy });
 
-    if (autoPickupCooldown <= 0) {
-      let nearestIndex = -1;
-      let best = Infinity;
+  for (const bullet of game.bullets) {
+    bullet.x += bullet.vx * dt;
+    bullet.y += bullet.vy * dt;
+  }
 
-      for (let i = 0; i < game.items.length; i++) {
-        const it = game.items[i];
-        const dx = st.x - it.x;
-        const dy = st.y - it.y;
-        const d = dx * dx + dy * dy;
-        if (d < best) {
-          best = d;
-          nearestIndex = i;
-        }
-      }
+  game.bullets = game.bullets.filter((bullet) =>
+    bullet.x > -20 && bullet.x < roomW + 20 && bullet.y > -20 && bullet.y < roomH + 20
+  );
 
-      const R = CONFIG.INTERACT_RADIUS;
-      if (nearestIndex !== -1 && best <= R * R) {
-        const picked = handlePickupClick(game, ui, null);
-        if (picked) autoPickupCooldown = 0.18;
+  const enemies = room.enemies;
+  for (const enemy of enemies) {
+    const dx = st.x - enemy.x;
+    const dy = st.y - enemy.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    enemy.x += (dx / dist) * CONFIG.ENEMY.speed * dt;
+    enemy.y += (dy / dist) * CONFIG.ENEMY.speed * dt;
+
+    if (dist < enemy.r + radius && st.invincible <= 0) {
+      st.hp = clamp(st.hp - CONFIG.ENEMY.damage, 0, st.maxHp);
+      st.invincible = 0.8;
+    }
+  }
+
+  for (const bullet of game.bullets) {
+    for (const enemy of enemies) {
+      const dx = bullet.x - enemy.x;
+      const dy = bullet.y - enemy.y;
+      if (dx * dx + dy * dy <= (enemy.r + bullet.r) ** 2) {
+        enemy.hp -= game.playerDamage;
+        bullet.hit = true;
       }
     }
   }
 
-  let inShelter = false;
-  for (const sh of game.shelters) {
-    if (insideRect(st.x, st.y, sh)) { inShelter = true; break; }
+  game.bullets = game.bullets.filter((bullet) => !bullet.hit);
+  room.enemies = enemies.filter((enemy) => enemy.hp > 0);
+
+  if (!room.cleared && room.enemies.length === 0) {
+    room.cleared = true;
+    meta.clearedRooms += 1;
+    if (Math.random() < 0.5) {
+      room.pickups.push(spawnPickup("heart", roomW / 2, roomH / 2));
+    }
   }
 
-  const hungerRate = (CONFIG.DRAIN.hungerPerMin / 60);
-  st.hunger = clamp(st.hunger - hungerRate * dt, 0, 100);
-
-  let warmRate = ((isNight ? CONFIG.DRAIN.warmNightPerMin : CONFIG.DRAIN.warmDayPerMin) / 60);
-
-  warmRate *= inShelter ? CONFIG.SHELTER_WARM_MULT : 1.0;
-
-  const insulationMult = 1 - clamp(st.insulation, 0, CONFIG.INSULATION_CAP);
-  warmRate *= insulationMult;
-
-  st.warm = clamp(st.warm - warmRate * dt, 0, 100);
-
-  const starving = st.hunger <= 0.01;
-  const freezing = st.warm <= 0.01;
-
-  if (starving || freezing) {
-    const dmgPerMin = (starving ? CONFIG.DRAIN.hpStarvePerMin : 0) + (freezing ? CONFIG.DRAIN.hpFreezePerMin : 0);
-    st.hp = clamp(st.hp - (dmgPerMin / 60) * dt, 0, 100);
-  } else {
-    st.hp = clamp(st.hp + (CONFIG.DRAIN.hpRegenPerMin / 60) * dt, 0, 100);
+  if (st.invincible > 0) {
+    st.invincible = Math.max(0, st.invincible - dt);
   }
+
+  for (const pickup of room.pickups) {
+    const dx = st.x - pickup.x;
+    const dy = st.y - pickup.y;
+    if (dx * dx + dy * dy <= (pickup.r + radius) ** 2) {
+      st.hp = Math.min(st.maxHp, st.hp + CONFIG.PICKUP.heartHeal);
+      pickup.taken = true;
+    }
+  }
+  room.pickups = room.pickups.filter((pickup) => !pickup.taken);
 
   if (st.hp <= 0.001) end(false);
-  if (dn.t >= meta.winSeconds) end(true);
+  if (meta.clearedRooms >= meta.totalRooms) end(true);
 
-  const viewW = canvas.width / DPR();
-  const viewH = canvas.height / DPR();
+  if (room.cleared) {
+    const doorHalf = CONFIG.ROOM.door / 2;
+    if (room.exits.up && st.y <= radius && Math.abs(st.x - roomW / 2) < doorHalf) {
+      enterRoom(roomId(room.row - 1, room.col), "up");
+    }
+    if (room.exits.down && st.y >= roomH - radius && Math.abs(st.x - roomW / 2) < doorHalf) {
+      enterRoom(roomId(room.row + 1, room.col), "down");
+    }
+    if (room.exits.left && st.x <= radius && Math.abs(st.y - roomH / 2) < doorHalf) {
+      enterRoom(roomId(room.row, room.col - 1), "left");
+    }
+    if (room.exits.right && st.x >= roomW - radius && Math.abs(st.y - roomH / 2) < doorHalf) {
+      enterRoom(roomId(room.row, room.col + 1), "right");
+    }
+  }
 
+  const viewW = meta.viewWorldW ?? CONFIG.ROOM.w;
+  const viewH = meta.viewWorldH ?? CONFIG.ROOM.h;
   const targetCamX = st.x - viewW / 2;
   const targetCamY = st.y - viewH / 2;
 
-  meta.camera.x = clamp(lerp(meta.camera.x, targetCamX, 0.12), 0, CONFIG.WORLD.w - viewW);
-  meta.camera.y = clamp(lerp(meta.camera.y, targetCamY, 0.12), 0, CONFIG.WORLD.h - viewH);
-
-  meta.flags.inShelter = inShelter;
-  meta.flags.isNight = isNight;
-  meta.flags.cyclePos = cyclePos;
-  meta.flags.cycleLen = cycleLen;
+  const maxCamX = Math.max(0, CONFIG.ROOM.w - viewW);
+  const maxCamY = Math.max(0, CONFIG.ROOM.h - viewH);
+  meta.camera.x = clamp(lerp(meta.camera.x, targetCamX, CONFIG.CAM.followLerp), 0, maxCamX);
+  meta.camera.y = clamp(lerp(meta.camera.y, targetCamY, CONFIG.CAM.followLerp), 0, maxCamY);
 }
 
 function loop(now) {
   requestAnimationFrame(loop);
+
+  const { viewW, viewH, scale } = updateView();
+  const worldViewW = viewW / scale;
+  const worldViewH = viewH / scale;
 
   renderer.draw(game);
   ui.updateHUD(game);
@@ -220,6 +320,8 @@ function loop(now) {
 
   const dt = Math.min(0.05, (now - game.meta.last) / 1000);
   game.meta.last = now;
+  game.meta.viewWorldW = worldViewW;
+  game.meta.viewWorldH = worldViewH;
   update(dt);
 }
 

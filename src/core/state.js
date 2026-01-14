@@ -2,16 +2,12 @@ import { CONFIG } from "./config.js";
 
 export function createState() {
   return {
-    x: CONFIG.WORLD.w / 2,
-    y: CONFIG.WORLD.h / 2,
-    speed: CONFIG.MOVE_SPEED,
-
-    hp: 100,
-    hunger: 100,
-    warm: 100,
-    insulation: 0,
-
-    inv: Array.from({ length: CONFIG.INVENTORY_SLOTS }, () => null),
+    x: CONFIG.ROOM.w / 2,
+    y: CONFIG.ROOM.h / 2,
+    speed: CONFIG.PLAYER.speed,
+    hp: CONFIG.PLAYER.maxHp,
+    maxHp: CONFIG.PLAYER.maxHp,
+    invincible: 0,
   };
 }
 
@@ -22,20 +18,11 @@ export function createGameMeta() {
     last: 0,
 
     camera: { x: 0, y: 0 },
-
-    dayNight: {
-      daySec: CONFIG.CYCLE.daySec,
-      nightSec: CONFIG.CYCLE.nightSec,
-      t: 0,
-    },
-
-    winSeconds: CONFIG.WIN_SECONDS,
-
-    flags: {
-      inShelter: false,
-      isNight: false,
-      cyclePos: 0,
-      cycleLen: CONFIG.CYCLE.daySec + CONFIG.CYCLE.nightSec,
-    },
+    view: { scale: 1, offsetX: 0, offsetY: 0 },
+    fireCooldown: 0,
+    elapsed: 0,
+    currentRoomId: null,
+    clearedRooms: 0,
+    totalRooms: 0,
   };
 }

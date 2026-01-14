@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>homeless buffy simulator</title>
+  <title>roguelike prototype</title>
   <link rel="stylesheet" href="./src/styles.css" />
 </head>
 <body>
@@ -19,21 +19,17 @@
           <div class="bar"><div class="fill" id="hpFill"></div></div>
         </div>
         <div class="statBlock">
-          <div class="label" id="lblHunger"></div>
-          <div class="bar"><div class="fill" id="hungerFill"></div></div>
-        </div>
-        <div class="statBlock">
-          <div class="label" id="lblWarmth"></div>
-          <div class="bar"><div class="fill" id="warmFill"></div></div>
+          <div class="label" id="lblDamage"></div>
+          <div class="bar"><div class="fill" id="dmgFill"></div></div>
         </div>
       </div>
 
       <div class="panel rightInfo">
         <div class="small" id="timeLine"></div>
-        <div class="small" id="cycleLine"></div>
-        <div class="small" id="shelterLine"></div>
+        <div class="small" id="roomLine"></div>
+        <div class="small" id="clearLine"></div>
         <div class="small controlsHint" style="opacity:0.75">
-          WASD - movement, LMB - pick up an item
+          WASD — движение, ЛКМ — стрельба, стрелки — альтернативный огонь
         </div>
         <div class="small mobileHint" style="opacity:0.75">
 
@@ -41,9 +37,6 @@
       </div>
     </div>
   </div>
-
-  <div class="inventory" id="inv"></div>
-  <div class="toast" id="toast"></div>
 
   <div class="overlay show" id="startOverlay">
     <div class="card">

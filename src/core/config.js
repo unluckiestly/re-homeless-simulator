@@ -1,22 +1,32 @@
 export const CONFIG = Object.freeze({
-  WIN_SECONDS: 5 * 60,
-  INVENTORY_SLOTS: 9,
-  WORLD: { w: 4200, h: 3000 },
-
-  MOVE_SPEED: 260,
-  INTERACT_RADIUS: 78,
-
-  CYCLE: { daySec: 90, nightSec: 90 },
-
-  DRAIN: {
-    hungerPerMin: 30.0,      // было 2.2  -> ~3.6x
-    warmDayPerMin: 30.5,     // было 2.6  -> ~3.65x
-    warmNightPerMin: 45.0,  // было 6.5  -> ~3.7x
-    hpRegenPerMin: 1.2,
-    hpStarvePerMin: 8,
-    hpFreezePerMin: 12,
+  MAP: {
+    rows: 3,
+    cols: 3,
+    rooms: 7,
   },
-
-  INSULATION_CAP: 0.5,
-  SHELTER_WARM_MULT: 0.25,
+  ROOM: {
+    w: 980,
+    h: 640,
+    wall: 48,
+    door: 140,
+  },
+  PLAYER: {
+    speed: 300,
+    maxHp: 100,
+    fireCooldown: 0.18,
+    bulletSpeed: 620,
+    bulletDamage: 16,
+  },
+  ENEMY: {
+    speed: 120,
+    hp: 40,
+    radius: 16,
+    damage: 18,
+  },
+  PICKUP: {
+    heartHeal: 22,
+  },
+  CAM: {
+    followLerp: 0.18,
+  },
 });

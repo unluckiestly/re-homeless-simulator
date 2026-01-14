@@ -100,15 +100,16 @@ function end(victory) {
 function updateView() {
   const viewW = canvas.width / DPR();
   const viewH = canvas.height / DPR();
-  const scale = Math.min(viewW / CONFIG.ROOM.w, viewH / CONFIG.ROOM.h);
+  const scale = Math.max(0.01, Math.min(viewW / CONFIG.ROOM.w, viewH / CONFIG.ROOM.h));
   const offsetX = (viewW - CONFIG.ROOM.w * scale) / 2;
   const offsetY = (viewH - CONFIG.ROOM.h * scale) / 2;
   game.meta.view = { scale, offsetX, offsetY };
-  return { viewW, viewH, scale };
+  game.meta.viewWorldW = viewW / scale;
+  game.meta.viewWorldH = viewH / scale;
 }
 
 function screenToWorld(sx, sy) {
-  const view = game.meta.view;
+  const view = game.meta.view ?? { scale: 1, offsetX: 0, offsetY: 0 };
   const x = (sx / DPR() - view.offsetX) / view.scale + game.meta.camera.x;
   const y = (sy / DPR() - view.offsetY) / view.scale + game.meta.camera.y;
   return { x, y };
@@ -189,6 +190,7 @@ function update(dt) {
   const meta = game.meta;
   meta.elapsed += dt;
   const room = game.roomsById.get(meta.currentRoomId);
+  if (!room) return;
 
   let mvx = 0, mvy = 0;
 
@@ -309,9 +311,7 @@ function update(dt) {
 function loop(now) {
   requestAnimationFrame(loop);
 
-  const { viewW, viewH, scale } = updateView();
-  const worldViewW = viewW / scale;
-  const worldViewH = viewH / scale;
+  updateView();
 
   renderer.draw(game);
   ui.updateHUD(game);
@@ -320,8 +320,6 @@ function loop(now) {
 
   const dt = Math.min(0.05, (now - game.meta.last) / 1000);
   game.meta.last = now;
-  game.meta.viewWorldW = worldViewW;
-  game.meta.viewWorldH = worldViewH;
   update(dt);
 }
 
